@@ -89,30 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const fragmentCoils = document.createDocumentFragment();
                 const fragmentBits = document.createDocumentFragment();
                 const fragmentRegisters = document.createDocumentFragment();
-
-                // // Process Coils
-                // Object.entries(data.coils || {}).forEach(([address, state]) => {
-                //     const tr = document.createElement('tr');
-                //     tr.append(
-                //         createCell(`OUTPUT${address}`),
-                //         createCell(formatCoilAddress(address)),
-                //         createStatusCell(state),
-                //         ...Array(6).fill().map(() => createCell('')) // 6 additional cells for spacing
-                //     );
-                //     fragmentCoils.appendChild(tr);
-                // });
-                //
-                // // Process Input Bits
-                // Object.entries(data.input_bits || {}).forEach(([address, state]) => {
-                //     const tr = document.createElement('tr');
-                //     tr.append(
-                //         createCell(`INPUT BIT${address}`),
-                //         createCell(formatInputBitAddress(address)),
-                //         createStatusCell(state),
-                //         ...Array(3).fill().map(() => createCell('')) // 3 additional cells for spacing
-                //     );
-                //     fragmentBits.appendChild(tr);
-                // });
                 // Process Coils (without additional empty cells)
                 Object.entries(data.coils || {}).forEach(([address, state]) => {
                     const tr = document.createElement('tr');

@@ -62,35 +62,6 @@ def get_modbus_addresses_with_check(sheet_name):
     }
 
 
-# def get_coils(sheet_name):
-#     """Get coil addresses for selected PLC."""
-#     coils = get_modbus_addresses_with_check(sheet_name)["Coils"]
-#     logger.info(f"COILS: {coils}")
-#     return coils
-#
-#
-# def get_input_bits(sheet_name):
-#     """Get input bit addresses for selected PLC."""
-#     input_bits = get_modbus_addresses_with_check(sheet_name)["Input Bits"]
-#     logger.info(f"INPUT BITS: {input_bits}")
-#     return input_bits
-#
-#
-# def get_inputs_register(sheet_name):
-#     """Get input register addresses for selected PLC."""
-#     analog_inputs = get_modbus_addresses_with_check(sheet_name)["Analog Inputs"]
-#     logger.info(f"INPUT REGISTERS: {analog_inputs}")
-#     return analog_inputs
-#
-# field_data = {}
-# def get_data_for_Plc(sheet_name,plc_id):
-#      field_data[plc_id] = {
-#         "coil_states": get_coils(sheet_name),
-#         "input_status_states": get_input_bits(sheet_name),
-#         "input_register_states": get_inputs_register(sheet_name)
-#      }
-#      return field_data
-
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -164,60 +135,7 @@ class WebViewBridge:
     def get_plc_list(self):
         return sorted(self.plc_configs.keys(), key=lambda x: int(x[3:]))
 
-    # def create_plc_window(self, plc_name):
-    #     if plc_name in self.active_windows:
-    #         return True
-    #
-    #     config = self.plc_configs.get(plc_name)
-    #     if not config:
-    #         logging.error(f"Invalid PLC {plc_name}")
-    #         return False
-    #
-    #     try:
-    #         self.window_counter += 1
-    #         window = webview.create_window(
-    #             f'PLC {plc_name} Monitoring ({self.window_counter})',
-    #             url=f'/data?plc={plc_name}',
-    #             js_api=self,  # Ensure this is correctly set
-    #             width=1200,
-    #             height=800
-    #         )
-    #
-    #         def on_closed():
-    #             self.loop.call_soon_threadsafe(
-    #                 self.loop.create_task,
-    #                 self._handle_window_close(plc_name)
-    #             )
-    #
-    #         window.events.closed += on_closed
-    #         self.active_windows[plc_name] = window
-    #
-    #         self.loop.call_soon_threadsafe(
-    #             self.loop.create_task,
-    #             self.client_manager.start_plc(config)
-    #         )
-    #         return True
-    #     except Exception as e:
-    #         logging.error(f"Window creation failed: {e}")
-    #         return False
-    # In main.py's WebViewBridge class
-    # In WebViewBridge class
-    # def get_plc_config(self, plc_name):
-    #     config = self.plc_configs.get(plc_name, {})
-    #     # excel_data = self.get_modbus_addresses_with_check(plc_name)  # Load from plc_data.xlsx
-    #     return {
-    #         'addresses': [
-    #             {
-    #                 'output_no': row['PLC Output No'],
-    #                 'coil': row['MODBUS ADDRESS (Coils)'],
-    #                 'input_bit_no': row['INPUT BIT NO'],
-    #                 'input_bit': row['MODBUS ADDRESS (Input Bits)'],
-    #                 'analog_slot': row['PLC ANALOG INPUT SLOT'],
-    #                 'register': row['MODBUS ADDRESS (Analog Inputs)']
-    #             }
-    #             for _, row in excel_data.iterrows()
-    #         ]
-    #     }
+
     def create_plc_window(self, plc_name):
         if plc_name in self.active_windows:
             return True
@@ -260,31 +178,6 @@ class WebViewBridge:
             del self.active_windows[plc_name]
         await self.client_manager.stop_plc(plc_name)
 
-    # def get_modbus_addresses_with_check(self, sheet_name):
-    #     """Read Modbus addresses from Excel sheet."""
-    #     try:
-    #         df = pd.read_excel(SAVED_ADDRESS_FILE_PATH, sheet_name=sheet_name)
-    #     except Exception as e:
-    #         logger.error(f"Error reading Excel file: {e}")
-    #         return {"Coils": [], "Input Bits": [], "Analog Inputs": []}
-    #
-    #     if df.empty:
-    #         logger.warning(f"Sheet '{sheet_name}' is empty")
-    #         return {"Coils": [], "Input Bits": [], "Analog Inputs": []}
-    #
-    #     # Extract and adjust addresses
-    #     coils = df['MODBUS ADDRESS (Coils)'].dropna().astype(int).tolist()
-    #     input_bits = [addr - 10000 for addr in
-    #                   df['MODBUS ADDRESS (Input Bits)'].dropna().astype(int).tolist()]
-    #     analog_inputs = [addr - 30000 for addr in
-    #                      df['MODBUS ADDRESS (Analog Inputs)'].dropna().astype(int).tolist()]
-    #
-    #     return {
-    #         "Coils": coils,
-    #         "Input Bits": input_bits,
-    #         "Analog Inputs": analog_inputs
-    #     }
-
     def get_plc_data(self, plc_name):
         # get_modbus_addresses_with_check(plc_name)
         # logging.info(f"modbus address: {get_modbus_addresses_with_check(plc_name)}")
@@ -317,7 +210,6 @@ def data():
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     return send_from_directory('static', filename)
-
 
 @app.route('/api/health')
 def health_check():
