@@ -6,11 +6,12 @@ import threading
 import numpy as np
 import pandas as pd
 import webview
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, jsonify
 from threading import Lock
 
 # Import your ModBus module components
 from ModBus import modbus_client_loop, latest_modbus_data
+from settings import settings_bp
 
 # Configure logging
 logging.basicConfig(
@@ -70,6 +71,11 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 # Global state and locks
 global_modbus_data = {}
 data_lock = Lock()
+
+app.register_blueprint(settings_bp)  # Register the settings Blueprint
+
+
+
 
 # Configure logging
 logging.basicConfig(
@@ -291,7 +297,7 @@ if __name__ == "__main__":
     )
 
     try:
-        webview.start()
+        webview.start(debug=True)
         # webview.start(debug=True)
     except Exception as e:
         logging.error(f"Webview startup failed: {e}")

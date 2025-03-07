@@ -4,7 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const dataBodyCoils = document.getElementById('data-body-coils');
     const dataBodyBits = document.getElementById("data-body-input-states");
     const dataBodyRegister = document.getElementById("data-body-registers");
+    const refreshButton = document.getElementById('refreshButton');
     let updateInterval;
+
 
     // Function to check if pywebview API is available
     function isPyWebViewApiReady() {
@@ -37,6 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+
+
         async function handleShow() {
             const plcName = plcSelect.value;
             if (plcName) {
@@ -51,7 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         plcSelect.addEventListener('focus', loadPlcList);
          showButton.addEventListener('click', handleShow);
-        // document.querySelector('button').addEventListener('click', handleShow);
+         // refreshButton.addEventListener('click', loadPlcList)
+        document.querySelector('button').addEventListener('click', loadPlcList);
 
     }
 
