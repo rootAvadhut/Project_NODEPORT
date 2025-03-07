@@ -152,9 +152,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 localStorage.setItem("refreshPlcList", "true");
                 // Call loadPlcList after saving data
 
-
-                // ✅ Redirect to home page
-                // window.location.href = "/";
+            alert("✅ Settings saved successfully!");
+                    window.location.reload();
             } else {
                 const errorMessage = await response.json();
                 alert(`❌ Error: ${errorMessage.error}`);

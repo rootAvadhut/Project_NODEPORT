@@ -139,17 +139,35 @@ class WebViewBridge:
         self.window_counter = 0
 
     def get_plc_list(self):
-        return sorted(self.plc_configs.keys(), key=lambda x: int(x[3:]))
-
+        # return sorted(self.plc_configs.keys(), key=lambda x: int(x[3:]))
+        """Reload PLC config each time to ensure freshness"""
+        plc_config = load_plc_config()
+        valid_plcs = [p for p in plc_config if p.get("IP Address") and p.get("Port", 0) > 0]
+        return sorted([p["PLC"] for p in valid_plcs], key=lambda x: int(x[3:]))
 
     def create_plc_window(self, plc_name):
+        # if plc_name in self.active_windows:
+        #     return True
+        #
+        # config = self.plc_configs.get(plc_name)
+        # """Create window using fresh config data"""
+        # plc_config = load_plc_config()
+        # valid_plcs = [p for p in plc_config if p.get("IP Address") and p.get("Port", 0) > 0]
+        # config = next((p for p in valid_plcs if p["PLC"] == plc_name), None)
+        # if not config:
+        #     logging.error(f"Invalid PLC {plc_name}")
+        #     return False
+        """Create window using fresh config data"""
+        plc_config = load_plc_config()
+        valid_plcs = [p for p in plc_config if p.get("IP Address") and p.get("Port", 0) > 0]
+        config = next((p for p in valid_plcs if p["PLC"] == plc_name), None)
+
+        if not config:
+            logging.error(f"PLC {plc_name} not found in config")
+            return False
+
         if plc_name in self.active_windows:
             return True
-
-        config = self.plc_configs.get(plc_name)
-        if not config:
-            logging.error(f"Invalid PLC {plc_name}")
-            return False
 
         try:
             self.window_counter += 1
@@ -226,13 +244,22 @@ def health_check():
 def load_plc_config():
     plc_config_path = os.path.join('config', 'plc_data.xlsx')
     try:
-        df = pd.read_excel(plc_config_path)
+        if not os.path.exists(plc_config_path):
+            return []
+        df = pd.read_excel(plc_config_path, engine='openpyxl')
         df.replace({np.nan: None}, inplace=True)
+
+        # Validate required columns
+        required_columns = ['PLC', 'IP Address', 'Port',
+                            'Sampling Frequency', 'Change in Data']
+        if not all(col in df.columns for col in required_columns):
+            logging.error("PLC config file missing required columns")
+            return []
+
         return df.to_dict('records')
     except Exception as e:
-        logging.error(f"Error loading PLC config: {e}")
+        logging.error(f"Error loading PLC config: {str(e)}")
         return []
-
 
 async def monitor_global_data():
     while True:
@@ -288,6 +315,7 @@ if __name__ == "__main__":
 
     # Create and start webview window
     bridge = WebViewBridge(valid_plcs, client_manager, loop)
+    # bridge = WebViewBridge(client_manager, loop)
     window = webview.create_window(
         'PLC Monitor',
         url='http://localhost:5000',
@@ -297,7 +325,7 @@ if __name__ == "__main__":
     )
 
     try:
-        webview.start(debug=True)
+        webview.start()
         # webview.start(debug=True)
     except Exception as e:
         logging.error(f"Webview startup failed: {e}")
