@@ -11,6 +11,7 @@ from threading import Lock
 
 # Import your ModBus module components
 from ModBus import modbus_client_loop, latest_modbus_data
+from register import register_bp
 from settings import settings_bp
 
 # Configure logging
@@ -73,6 +74,7 @@ global_modbus_data = {}
 data_lock = Lock()
 
 app.register_blueprint(settings_bp)  # Register the settings Blueprint
+app.register_blueprint(register_bp)
 
 
 
