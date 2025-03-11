@@ -77,8 +77,6 @@ app.register_blueprint(settings_bp)  # Register the settings Blueprint
 app.register_blueprint(register_bp)
 
 
-
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -304,7 +302,6 @@ if __name__ == "__main__":
     # Start Flask server
     flask_thread = threading.Thread(target=start_flask, daemon=True)
     flask_thread.start()
-
 
     # Start async loop in separate thread
     def run_async():

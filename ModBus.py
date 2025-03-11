@@ -82,6 +82,7 @@ def get_inputs_register(sheet_name):
     logger.info(f"INPUT REGISTERS: {analog_inputs}")
     return analog_inputs
 
+
 # field_data = {}
 # def get_data_for_Plc(sheet_name):
 #      field_data[plc_id] = {
@@ -90,7 +91,6 @@ def get_inputs_register(sheet_name):
 #         "input_register_states": get_inputs_register(sheet_name)
 #      }
 #     return field_data
-
 
 
 async def check_connection(client, plc_id, retry_interval=5):
@@ -195,7 +195,7 @@ async def read_registers(client, read_func, addresses, sampling_frequency, max_c
                     for i, a in enumerate(range(start, prev_addr + 1)):
                         if a in addresses:
                             results[a] = response.registers[i] if read_func == client.read_input_registers else \
-                            response.bits[i]
+                                response.bits[i]
                 start = addr
             prev_addr = addr
 
@@ -249,8 +249,8 @@ async def modbus_client_loop(plc_id, ip, port, sampling_frequency):
                         # Thread-safe data update
                         with data_lock:
                             latest_modbus_data[plc_id] = {
-                                "coil_states": coil_states ,
-                                "input_status_states": input_states ,
+                                "coil_states": coil_states,
+                                "input_status_states": input_states,
                                 "input_register_states": register_states
                             }
                             logger.info(f"latest_modbus_data : {latest_modbus_data}")
@@ -275,4 +275,3 @@ async def modbus_client_loop(plc_id, ip, port, sampling_frequency):
         except Exception as e:
             logger.error(f"Critical error for {plc_id}: {e}")
             await asyncio.sleep(10)
-

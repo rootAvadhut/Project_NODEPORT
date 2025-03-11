@@ -191,14 +191,27 @@ button:disabled {
     border-radius: 4px;
     text-align: center;
 }
-#plc {
-    width: 150px; /* Reduce width of dropdown */
-    padding: 5px;
-    font-size: 14px;
-}
+/*#plc {*/
+/*    width: 150px; !* Reduce width of dropdown *!*/
+/*    padding: 5px;*/
+/*    font-size: 14px;*/
+/*}*/
+/*.entries-container {*/
+/*    max-height: 300px; !* Limit height *!*/
+/*    overflow-y: auto; !* Add vertical scrollbar *!*/
+/*    border: 1px solid #ccc;*/
+/*    padding: 10px;*/
+/*}*/
 .entries-container {
-    max-height: 300px; /* Limit height */
-    overflow-y: auto; /* Add vertical scrollbar */
+    max-height: 500px; /* Increased height for more visibility */
+    overflow-y: auto; /* Enable vertical scrollbar */
     border: 1px solid #ccc;
     padding: 10px;
+}
+
+/* Ensure dropdown is smaller */
+#plc {
+    width: 150px;
+    padding: 5px;
+    font-size: 14px;
 }

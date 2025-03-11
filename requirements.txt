@@ -10,3 +10,5 @@ cffi~=1.17.1
 pandas~=2.2.3
 numpy~=2.2.3
 openpyxl~=3.1.5
+Flask~=3.1.0
+pymodbus~=3.8.6

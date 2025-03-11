@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import re
 from flask import jsonify
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request
 
 # Define the configuration directory
 CONFIG_DIR = "config"
@@ -93,9 +93,6 @@ def update_plc_data(plc, ip_address, port, sampling_freq, change_data):
     except Exception as e:
         print(f"❌ Error saving PLC data: {e}")
         return False  # Failure flag
-
-
-
 
 
 @settings_bp.route('/settings', methods=['GET', 'POST'])
