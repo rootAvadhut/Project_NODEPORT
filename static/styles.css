@@ -306,7 +306,19 @@ select:disabled {
 }
 
 
+/*!* Add this to ensure consistent styling for the new table *!*/
+/*.data-table-holding-registers {*/
+/*    !* Same styles as other tables *!*/
+/*}*/
 
+/*!* If you want specific styles for holding registers *!*/
+/*.data-table-holding-registers th {*/
+/*    background-color: #8e44ad; !* Purple color for holding registers *!*/
+/*}*/
+
+/*.data-table-holding-registers tr:hover {*/
+/*    background-color: #f3e5f5; !* Light purple hover *!*/
+/*}*/
 
 
 

@@ -202,17 +202,32 @@ class WebViewBridge:
             del self.active_windows[plc_name]
         await self.client_manager.stop_plc(plc_name)
 
+    # def get_plc_data(self, plc_name):
+    #     # get_modbus_addresses_with_check(plc_name)
+    #     # logging.info(f"modbus address: {get_modbus_addresses_with_check(plc_name)}")
+    #     try:
+    #         with data_lock:
+    #             data = global_modbus_data.get(plc_name, {})
+    #             logging.info(f"select plc data: {data} ")
+    #         return {
+    #             'coils': data.get('coil_states', {}),
+    #             'input_bits': data.get('input_status_states', {}),
+    #             'registers': data.get('input_register_states', {}),
+    #             'holding_registers': data.get('holding_register_states', {})
+    #         }
+    #     except Exception as e:
+    #         logging.error(f"Error getting data for {plc_name}: {e}")
+    #         return {}
     def get_plc_data(self, plc_name):
-        # get_modbus_addresses_with_check(plc_name)
-        # logging.info(f"modbus address: {get_modbus_addresses_with_check(plc_name)}")
         try:
             with data_lock:
                 data = global_modbus_data.get(plc_name, {})
-                logging.info(f"select plc data: {data} ")
+                logger.info(f"select plc data: {data} ")
             return {
                 'coils': data.get('coil_states', {}),
                 'input_bits': data.get('input_status_states', {}),
-                'registers': data.get('input_register_states', {})
+                'registers': data.get('input_register_states', {}),
+                'holding_registers': data.get('holding_register_states', {})  # Add this line
             }
         except Exception as e:
             logging.error(f"Error getting data for {plc_name}: {e}")

@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dataBodyCoils = document.getElementById('data-body-coils');
     const dataBodyBits = document.getElementById("data-body-input-states");
     const dataBodyRegister = document.getElementById("data-body-registers");
+    const dataBodyHoldingRegisters = document.getElementById('data-body-holding-registers');
     const refreshButton = document.getElementById('refreshButton');
     let updateInterval;
 
@@ -40,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
-
         async function handleShow() {
             const plcName = plcSelect.value;
             if (plcName) {
@@ -54,8 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         plcSelect.addEventListener('focus', loadPlcList);
-         showButton.addEventListener('click', handleShow);
-         // refreshButton.addEventListener('click', loadPlcList)
+        showButton.addEventListener('click', handleShow);
+        // refreshButton.addEventListener('click', loadPlcList)
         document.querySelector('button').addEventListener('click', loadPlcList);
 
     }
@@ -94,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const fragmentCoils = document.createDocumentFragment();
                 const fragmentBits = document.createDocumentFragment();
                 const fragmentRegisters = document.createDocumentFragment();
+                const fragmentHoldingRegisters = document.createDocumentFragment();
                 // Process Coils (without additional empty cells)
                 Object.entries(data.coils || {}).forEach(([address, state]) => {
                     const tr = document.createElement('tr');
@@ -125,6 +126,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     );
                     fragmentRegisters.appendChild(tr);
                 });
+                Object.entries(data.holding_registers || {}).forEach(([address, value]) => {
+                    const tr = document.createElement('tr');
+                    tr.append(
+                        createCell(`HOLDING REG${address}`),
+                        createCell(formatHoldingRegisterAddress(address)),
+                        createCell(value, 'value')
+                    );
+                    fragmentHoldingRegisters.appendChild(tr);
+                });
 
                 // Update the tables
                 dataBodyCoils.innerHTML = '';
@@ -135,6 +145,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 dataBodyRegister.innerHTML = '';
                 dataBodyRegister.appendChild(fragmentRegisters);
+                // Update the holding registers table
+                dataBodyHoldingRegisters.innerHTML = '';
+                dataBodyHoldingRegisters.appendChild(fragmentHoldingRegisters);
 
             } catch (error) {
                 console.error('Update failed:', error);
@@ -157,6 +170,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return `3${String(address).padStart(4, '0')}`;
         }
 
+        function formatHoldingRegisterAddress(address) {
+            return `4${String(address).padStart(4, '0')}`;
+        }
+
         // Wait for API to be available before initializing data updates
         waitForPyWebViewApi().then(() => {
             // Initial update
@@ -174,11 +191,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
-
-
-
-
 
 
 // document.addEventListener('DOMContentLoaded', () => {

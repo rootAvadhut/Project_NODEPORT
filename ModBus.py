@@ -36,31 +36,81 @@ SAVED_ADDRESS_FILE_PATH = "config/saveAddress.xlsx"
 SELECTED_PLC_FILE = "config/selectedPlc.txt"
 
 
+# def get_modbus_addresses_with_check(sheet_name):
+#     """Read Modbus addresses from Excel sheet."""
+#     try:
+#         df = pd.read_excel(SAVED_ADDRESS_FILE_PATH, sheet_name=sheet_name)
+#     except Exception as e:
+#         logger.error(f"Error reading Excel file: {e}")
+#         return {"Coils": [], "Input Bits": [], "Analog Inputs": []}
+#
+#     if df.empty:
+#         logger.warning(f"Sheet '{sheet_name}' is empty")
+#         return {"Coils": [], "Input Bits": [], "Analog Inputs": []}
+#
+#     # Extract and adjust addresses
+#     coils = df['MODBUS ADDRESS (Coils)'].dropna().astype(int).tolist()
+#     input_bits = [addr - 10000 for addr in
+#                   df['MODBUS ADDRESS (Input Bits)'].dropna().astype(int).tolist()]
+#     analog_inputs = [addr - 30000 for addr in
+#                      df['MODBUS ADDRESS (Analog Inputs)'].dropna().astype(int).tolist()]
+#
+#     return {
+#         "Coils": coils,
+#         "Input Bits": input_bits,
+#         "Analog Inputs": analog_inputs
+#     }
+# def get_modbus_addresses_with_check(sheet_name):
+#     """Read Modbus addresses from Excel sheet."""
+#     try:
+#         df = pd.read_excel(SAVED_ADDRESS_FILE_PATH, sheet_name=sheet_name)
+#     except Exception as e:
+#         logger.error(f"Error reading Excel file: {e}")
+#         return {"Coils": [], "Input Bits": [], "Analog Inputs": [], "Holding Registers": []}
+#
+#     if df.empty:
+#         logger.warning(f"Sheet '{sheet_name}' is empty")
+#         return {"Coils": [], "Input Bits": [], "Analog Inputs": [], "Holding Registers": []}
+#
+#     # Extract and adjust addresses
+#     coils = df['MODBUS ADDRESS (Coils)'].dropna().astype(int).tolist()
+#     input_bits = [addr - 10000 for addr in
+#                   df['MODBUS ADDRESS (Input Bits)'].dropna().astype(int).tolist()]
+#     analog_inputs = [addr - 30000 for addr in
+#                      df['MODBUS ADDRESS (Analog Inputs)'].dropna().astype(int).tolist()]
+#     holding_registers = [addr - 40000 for addr in
+#                         df['MODBUS ADDRESS (Holding Registers)'].dropna().astype(int).tolist()]
+#
+#     return {
+#         "Coils": coils,
+#         "Input Bits": input_bits,
+#         "Analog Inputs": analog_inputs,
+#         "Holding Registers": holding_registers
+#     }
+
 def get_modbus_addresses_with_check(sheet_name):
-    """Read Modbus addresses from Excel sheet."""
     try:
         df = pd.read_excel(SAVED_ADDRESS_FILE_PATH, sheet_name=sheet_name)
     except Exception as e:
         logger.error(f"Error reading Excel file: {e}")
-        return {"Coils": [], "Input Bits": [], "Analog Inputs": []}
+        return {"Coils": [], "Input Bits": [], "Analog Inputs": [], "Holding Registers": []}
 
     if df.empty:
         logger.warning(f"Sheet '{sheet_name}' is empty")
-        return {"Coils": [], "Input Bits": [], "Analog Inputs": []}
+        return {"Coils": [], "Input Bits": [], "Analog Inputs": [], "Holding Registers": []}
 
     # Extract and adjust addresses
     coils = df['MODBUS ADDRESS (Coils)'].dropna().astype(int).tolist()
-    input_bits = [addr - 10000 for addr in
-                  df['MODBUS ADDRESS (Input Bits)'].dropna().astype(int).tolist()]
-    analog_inputs = [addr - 30000 for addr in
-                     df['MODBUS ADDRESS (Analog Inputs)'].dropna().astype(int).tolist()]
+    input_bits = [addr - 10000 for addr in df['MODBUS ADDRESS (Input Bits)'].dropna().astype(int).tolist()]
+    analog_inputs = [addr - 30000 for addr in df['MODBUS ADDRESS (Analog Inputs)'].dropna().astype(int).tolist()]
+    holding_registers = [addr - 40000 for addr in df['MODBUS ADDRESS (Holding Registers)'].dropna().astype(int).tolist()]
 
     return {
         "Coils": coils,
         "Input Bits": input_bits,
-        "Analog Inputs": analog_inputs
+        "Analog Inputs": analog_inputs,
+        "Holding Registers": holding_registers
     }
-
 
 def get_coils(sheet_name):
     """Get coil addresses for selected PLC."""
@@ -81,6 +131,12 @@ def get_inputs_register(sheet_name):
     analog_inputs = get_modbus_addresses_with_check(sheet_name)["Analog Inputs"]
     logger.info(f"INPUT REGISTERS: {analog_inputs}")
     return analog_inputs
+# Add new helper function for holding registers
+def get_holding_registers(sheet_name):
+    """Get holding register addresses for selected PLC."""
+    holding = get_modbus_addresses_with_check(sheet_name)["Holding Registers"]
+    logger.info(f"HOLDING REGISTERS: {holding}")
+    return holding
 
 
 # field_data = {}
@@ -93,6 +149,34 @@ def get_inputs_register(sheet_name):
 #     return field_data
 
 
+# async def check_connection(client, plc_id, retry_interval=5):
+#     """Verify Modbus connection with retry logic."""
+#     try:
+#         logger.info(f"Checking connection for {plc_id}...")
+#         connection_ok = False
+#
+#         # Try reading different register types
+#         for read_func, addresses in [
+#             (client.read_coils, get_coils(plc_id)),
+#             (client.read_discrete_inputs, get_input_bits(plc_id)),
+#             (client.read_input_registers, get_inputs_register(plc_id))
+#         ]:
+#             if addresses:
+#                 logger.debug(f"Check Connection {plc_id}: Addresses: {addresses}")
+#                 response = await read_func(address=0, count=len(addresses))
+#                 if not response.isError():
+#                     connection_ok = True
+#                     break
+#
+#         plc_state[plc_id] = {"connected": connection_ok}
+#         logger.info(f"PLC {plc_id} connected: {connection_ok}")
+#         return connection_ok
+#
+#     except Exception as e:
+#         logger.error(f"Inside check Connection error for {plc_id}: {e}")
+#         plc_state[plc_id] = {"connected": False}
+#         return False
+# Update the check_connection function
 async def check_connection(client, plc_id, retry_interval=5):
     """Verify Modbus connection with retry logic."""
     try:
@@ -103,7 +187,8 @@ async def check_connection(client, plc_id, retry_interval=5):
         for read_func, addresses in [
             (client.read_coils, get_coils(plc_id)),
             (client.read_discrete_inputs, get_input_bits(plc_id)),
-            (client.read_input_registers, get_inputs_register(plc_id))
+            (client.read_input_registers, get_inputs_register(plc_id)),
+            (client.read_holding_registers, get_holding_registers(plc_id))
         ]:
             if addresses:
                 logger.debug(f"Check Connection {plc_id}: Addresses: {addresses}")
@@ -115,22 +200,44 @@ async def check_connection(client, plc_id, retry_interval=5):
         plc_state[plc_id] = {"connected": connection_ok}
         logger.info(f"PLC {plc_id} connected: {connection_ok}")
         return connection_ok
-
     except Exception as e:
         logger.error(f"Inside check Connection error for {plc_id}: {e}")
         plc_state[plc_id] = {"connected": False}
         return False
 
 
+# async def append_to_excel(data):
+#     """Append Modbus data to separate Excel files based on PLC ID and register type."""
+#     plc_id = data["plc_id"]
+#     # coil_states = data["coil_states"]
+#     # input_status_states = data["input_status_states"]
+#     # Convert boolean values to integers (1 or 0)
+#     coil_states = {k: int(v) for k, v in data["coil_states"].items()}
+#     input_status_states = {k: int(v) for k, v in data["input_status_states"].items()}
+#     input_register_states = data["input_register_states"]
+#
+#     folder_path = os.path.join("modbus_data", plc_id)
+#     os.makedirs(folder_path, exist_ok=True)
+#
+#     try:
+#         await asyncio.gather(
+#             _append_register_data(os.path.join(folder_path, "coil_states.xlsx"),
+#                                   "Coil States", coil_states),
+#             _append_register_data(os.path.join(folder_path, "input_status_states.xlsx"),
+#                                   "Input Status States", input_status_states),
+#             _append_register_data(os.path.join(folder_path, "input_register_states.xlsx"),
+#                                   "Input Register States", input_register_states, True)
+#         )
+#     except Exception as e:
+#         logger.error(f"Excel append error for {plc_id}: {e}")
+# Update the append_to_excel function
 async def append_to_excel(data):
     """Append Modbus data to separate Excel files based on PLC ID and register type."""
     plc_id = data["plc_id"]
-    # coil_states = data["coil_states"]
-    # input_status_states = data["input_status_states"]
-    # Convert boolean values to integers (1 or 0)
     coil_states = {k: int(v) for k, v in data["coil_states"].items()}
     input_status_states = {k: int(v) for k, v in data["input_status_states"].items()}
     input_register_states = data["input_register_states"]
+    holding_register_states = data["holding_register_states"]
 
     folder_path = os.path.join("modbus_data", plc_id)
     os.makedirs(folder_path, exist_ok=True)
@@ -142,7 +249,9 @@ async def append_to_excel(data):
             _append_register_data(os.path.join(folder_path, "input_status_states.xlsx"),
                                   "Input Status States", input_status_states),
             _append_register_data(os.path.join(folder_path, "input_register_states.xlsx"),
-                                  "Input Register States", input_register_states, True)
+                                  "Input Register States", input_register_states, True),
+            _append_register_data(os.path.join(folder_path, "holding_register_states.xlsx"),
+                                  "Holding Register States", holding_register_states, True)
         )
     except Exception as e:
         logger.error(f"Excel append error for {plc_id}: {e}")
@@ -178,35 +287,214 @@ async def _append_register_data(file_path, sheet_name, data, is_input_register=F
         logger.error(f"Error saving to {file_path}: {e}")
 
 
+# async def read_registers(client, read_func, addresses, sampling_frequency, max_count=2000):
+#     """Generic register reading function with address grouping."""
+#     results = {}
+#     try:
+#         sorted_addrs = sorted(addresses)
+#         start = sorted_addrs[0]
+#         prev_addr = start
+#
+#         for addr in sorted_addrs[1:]:
+#             if addr != prev_addr + 1 or (addr - start + 1) > max_count:
+#                 count = prev_addr - start + 1
+#                 response = await read_func(address=start - 1, count=count)
+#
+#                 if not response.isError():
+#                     for i, a in enumerate(range(start, prev_addr + 1)):
+#                         if a in addresses:
+#                             results[a] = response.registers[i] if read_func == client.read_input_registers else \
+#                                 response.bits[i]
+#                 start = addr
+#             prev_addr = addr
+#
+#         # Read last range
+#         count = prev_addr - start + 1
+#         response = await read_func(address=start - 1, count=count)
+#
+#         if not response.isError():
+#             for i, a in enumerate(range(start, prev_addr + 1)):
+#                 if a in addresses:
+#                     results[a] = response.registers[i] if read_func == client.read_input_registers else response.bits[i]
+#
+#         await asyncio.sleep(sampling_frequency / 1000)
+#         return results
+#
+#     except ModbusException as e:
+#         logger.error(f"Inside read register Modbus error: {e}")
+#         return {}
+#     except Exception as e:
+#         logger.error(f"Unexpected error: {e}")
+#         return {}
+
+
+# async def modbus_client_loop(plc_id, ip, port, sampling_frequency):
+#     """Main Modbus client loop for individual PLC."""
+#     logger.info(f"Starting Modbus client for {plc_id} at {ip}:{port}")
+#
+#     while True:
+#         try:
+#             async with AsyncModbusTcpClient(ip, port=port) as client:
+#                 logger.info(f"Connected to {plc_id} at {ip}:{port}")
+#
+#                 while True:
+#                     if not await check_connection(client, plc_id):
+#                         await asyncio.sleep(5)
+#                         continue
+#
+#                     try:
+#                         # Read all registers in parallel
+#                         coil_task = read_registers(client, client.read_coils,
+#                                                    get_coils(plc_id), sampling_frequency)
+#                         input_task = read_registers(client, client.read_discrete_inputs,
+#                                                     get_input_bits(plc_id), sampling_frequency)
+#                         register_task = read_registers(client, client.read_input_registers,
+#                                                        get_inputs_register(plc_id), sampling_frequency, 125)
+#
+#                         coil_states, input_states, register_states = await asyncio.gather(
+#                             coil_task, input_task, register_task
+#                         )
+#
+#                         # Thread-safe data update
+#                         with data_lock:
+#                             latest_modbus_data[plc_id] = {
+#                                 "coil_states": coil_states,
+#                                 "input_status_states": input_states,
+#                                 "input_register_states": register_states
+#                             }
+#                             logger.info(f"latest_modbus_data : {latest_modbus_data}")
+#                         # Save to Excel
+#                         await append_to_excel({
+#                             "plc_id": plc_id,
+#                             "coil_states": coil_states,
+#                             "input_status_states": input_states,
+#                             "input_register_states": register_states
+#                         })
+#
+#                     except ModbusException as e:
+#                         logger.error(f"Modbus error in {plc_id}: {e}")
+#                         await asyncio.sleep(1)
+#                     except Exception as e:
+#                         logger.error(f"Unexpected error in {plc_id}: {e}")
+#                         await asyncio.sleep(1)
+#
+#         except ConnectionException as e:
+#             logger.error(f"Connection failed for {plc_id}: {e}")
+#             await asyncio.sleep(5)
+#         except Exception as e:
+#             logger.error(f"Critical error for {plc_id}: {e}")
+#             await asyncio.sleep(10)
+# Update the modbus_client_loop function
+# async def modbus_client_loop(plc_id, ip, port, sampling_frequency):
+#     """Main Modbus client loop for individual PLC."""
+#     logger.info(f"Starting Modbus client for {plc_id} at {ip}:{port}")
+#
+#     while True:
+#         try:
+#             async with AsyncModbusTcpClient(ip, port=port) as client:
+#                 logger.info(f"Connected to {plc_id} at {ip}:{port}")
+#
+#                 while True:
+#                     if not await check_connection(client, plc_id):
+#                         await asyncio.sleep(5)
+#                         continue
+#
+#                     try:
+#                         # Read all registers in parallel
+#                         coil_task = read_registers(client, client.read_coils,
+#                                                    get_coils(plc_id), sampling_frequency)
+#                         input_task = read_registers(client, client.read_discrete_inputs,
+#                                                     get_input_bits(plc_id), sampling_frequency)
+#                         register_task = read_registers(client, client.read_input_registers,
+#                                                        get_inputs_register(plc_id), sampling_frequency, 125)
+#                         holding_task = read_registers(client, client.read_holding_registers,
+#                                                       get_holding_registers(plc_id), sampling_frequency, 125)
+#
+#                         coil_states, input_states, register_states, holding_states = await asyncio.gather(
+#                             coil_task, input_task, register_task, holding_task
+#                         )
+#
+#                         # Thread-safe data update
+#                         with data_lock:
+#                             latest_modbus_data[plc_id] = {
+#                                 "coil_states": coil_states,
+#                                 "input_status_states": input_states,
+#                                 "input_register_states": register_states,
+#                                 "holding_register_states": holding_states
+#                             }
+#                             logger.info(f"latest_modbus_data : {latest_modbus_data}")
+#
+#                         # Save to Excel
+#                         await append_to_excel({
+#                             "plc_id": plc_id,
+#                             "coil_states": coil_states,
+#                             "input_status_states": input_states,
+#                             "input_register_states": register_states,
+#                             "holding_register_states": holding_states
+#                         })
+#
+#                     except ModbusException as e:
+#                         logger.error(f"Modbus error in {plc_id}: {e}")
+#                         await asyncio.sleep(1)
+#                     except Exception as e:
+#                         logger.error(f"Unexpected error in {plc_id}: {e}")
+#                         await asyncio.sleep(1)
+#
+#         except ConnectionException as e:
+#             logger.error(f"Connection failed for {plc_id}: {e}")
+#             await asyncio.sleep(5)
+#         except Exception as e:
+#             logger.error(f"Critical error for {plc_id}: {e}")
+#             await asyncio.sleep(10)
 async def read_registers(client, read_func, addresses, sampling_frequency, max_count=2000):
     """Generic register reading function with address grouping."""
     results = {}
     try:
+        if not addresses:  # Skip if no addresses are provided
+            return results
+
         sorted_addrs = sorted(addresses)
         start = sorted_addrs[0]
         prev_addr = start
 
         for addr in sorted_addrs[1:]:
             if addr != prev_addr + 1 or (addr - start + 1) > max_count:
+                # Read the current range
                 count = prev_addr - start + 1
                 response = await read_func(address=start - 1, count=count)
 
                 if not response.isError():
-                    for i, a in enumerate(range(start, prev_addr + 1)):
-                        if a in addresses:
-                            results[a] = response.registers[i] if read_func == client.read_input_registers else \
-                                response.bits[i]
+                    # Determine if we're reading registers or bits
+                    if read_func in [client.read_input_registers, client.read_holding_registers]:
+                        # Handle input and holding registers
+                        for i, a in enumerate(range(start, prev_addr + 1)):
+                            if a in addresses:
+                                results[a] = response.registers[i]
+                    else:
+                        # Handle coils and discrete inputs
+                        for i, a in enumerate(range(start, prev_addr + 1)):
+                            if a in addresses:
+                                results[a] = response.bits[i]
+
+                # Start a new range
                 start = addr
             prev_addr = addr
 
-        # Read last range
+        # Read the last range
         count = prev_addr - start + 1
         response = await read_func(address=start - 1, count=count)
 
         if not response.isError():
-            for i, a in enumerate(range(start, prev_addr + 1)):
-                if a in addresses:
-                    results[a] = response.registers[i] if read_func == client.read_input_registers else response.bits[i]
+            if read_func in [client.read_input_registers, client.read_holding_registers]:
+                # Handle input and holding registers
+                for i, a in enumerate(range(start, prev_addr + 1)):
+                    if a in addresses:
+                        results[a] = response.registers[i]
+            else:
+                # Handle coils and discrete inputs
+                for i, a in enumerate(range(start, prev_addr + 1)):
+                    if a in addresses:
+                        results[a] = response.bits[i]
 
         await asyncio.sleep(sampling_frequency / 1000)
         return results
@@ -217,8 +505,6 @@ async def read_registers(client, read_func, addresses, sampling_frequency, max_c
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
         return {}
-
-
 async def modbus_client_loop(plc_id, ip, port, sampling_frequency):
     """Main Modbus client loop for individual PLC."""
     logger.info(f"Starting Modbus client for {plc_id} at {ip}:{port}")
@@ -241,9 +527,11 @@ async def modbus_client_loop(plc_id, ip, port, sampling_frequency):
                                                     get_input_bits(plc_id), sampling_frequency)
                         register_task = read_registers(client, client.read_input_registers,
                                                        get_inputs_register(plc_id), sampling_frequency, 125)
+                        holding_task = read_registers(client, client.read_holding_registers,
+                                                      get_holding_registers(plc_id), sampling_frequency, 125)
 
-                        coil_states, input_states, register_states = await asyncio.gather(
-                            coil_task, input_task, register_task
+                        coil_states, input_states, register_states, holding_states = await asyncio.gather(
+                            coil_task, input_task, register_task, holding_task
                         )
 
                         # Thread-safe data update
@@ -251,15 +539,18 @@ async def modbus_client_loop(plc_id, ip, port, sampling_frequency):
                             latest_modbus_data[plc_id] = {
                                 "coil_states": coil_states,
                                 "input_status_states": input_states,
-                                "input_register_states": register_states
+                                "input_register_states": register_states,
+                                "holding_register_states": holding_states
                             }
                             logger.info(f"latest_modbus_data : {latest_modbus_data}")
+
                         # Save to Excel
                         await append_to_excel({
                             "plc_id": plc_id,
                             "coil_states": coil_states,
                             "input_status_states": input_states,
-                            "input_register_states": register_states
+                            "input_register_states": register_states,
+                            "holding_register_states": holding_states
                         })
 
                     except ModbusException as e:
